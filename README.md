@@ -4,19 +4,23 @@ Este é um sistema web de vendas desenvolvido em Laravel. O objetivo do projeto 
 
 ## Funcionalidades
 
+- Login
 - Cadastro de produtos  
-- Cadastro de clientes  
-- Registro de vendas  
-- Associação de produtos a uma venda  
-- Controle de valores e formas de pagamento  
+- Cadastro de clientes
+- CRUD de vendas
+- Associação de produtos a uma venda
+- Associação de cliente a uma venda
+- Controle de valores e formas de pagamento
+- importação de venda no formato pdf
+- filtros na tabela de vendas
 
 ## Tecnologias utilizadas
 
-- PHP 8.x  
-- Laravel 10/11  
+- PHP 8.3 ou superior
+- Laravel 11  
 - MySQL  
-- Bootstrap ou Tailwind CSS  
-- Blade (motor de templates do Laravel)  
+- Bootstrap
+- JavaScript
 
 ## Como rodar o projeto
 
