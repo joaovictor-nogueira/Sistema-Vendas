@@ -31,7 +31,7 @@ Este é um sistema web de vendas desenvolvido em Laravel. O objetivo do projeto 
 2. Instale as dependências: 
    ```bash
     composer install
-    npm install && npm run dev
+    npm install
    ```
 3. Configure o arquivo .env:
    ```bash
@@ -42,7 +42,12 @@ Este é um sistema web de vendas desenvolvido em Laravel. O objetivo do projeto 
    ```bash
     php artisan migrate
    ```
-5. Inicie o servidor
+
+5.
+    ```bash
+    npm run build
+    ```
+6. Inicie o servidor
    ```bash
     php artisan serve
    ```
