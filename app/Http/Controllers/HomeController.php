@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cliente;
+use App\Models\Produto;
+use App\Models\Venda;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
@@ -23,6 +26,18 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $vendas = Venda::all();
+
+        $valorTotalVendas = $vendas->sum('valor_total');
+        
+        $vendasTotais = $vendas->count();
+
+        $clientes = Cliente::all();
+        $clientesTotais= $clientes->count();
+        
+        $produtos = Produto::all();
+        $produtosTotais = $produtos->count();
+
+        return view('home', compact('valorTotalVendas','vendasTotais', 'clientesTotais', 'produtosTotais'));
     }
 }

@@ -70,10 +70,10 @@
     </div>
 
    
-   <!-- <div class="row mt-5">
+  <div class="row mt-5">
         <div class="col-12">
             <div class="bg-white p-4 rounded-4 shadow-sm">
-                <h3 class="h5 fw-bold mb-3">Resumo do Mês</h3>
+                <h3 class="h5 fw-bold mb-3">Resumo</h3>
                 <div class="row g-4">
                     <div class="col-md-3">
                         <div class="p-3 rounded-3 bg-light">
@@ -83,7 +83,7 @@
                                 </div>
                                 <div>
                                     <p class="mb-0 text-muted small">Faturamento</p>
-                                    <h4 class="mb-0 fw-bold">R$ 24.580</h4>
+                                    <h4 class="mb-0 fw-bold">R$ {{ number_format($valorTotalVendas, 2, ',', '.') }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -96,7 +96,7 @@
                                 </div>
                                 <div>
                                     <p class="mb-0 text-muted small">Vendas</p>
-                                    <h4 class="mb-0 fw-bold">156</h4>
+                                    <h4 class="mb-0 fw-bold">{{$vendasTotais}}</h4>
                                 </div>
                             </div>
                         </div>
@@ -108,8 +108,8 @@
                                     <i class="bi bi-person text-info"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-0 text-muted small">Novos Clientes</p>
-                                    <h4 class="mb-0 fw-bold">24</h4>
+                                    <p class="mb-0 text-muted small">Clientes</p>
+                                    <h4 class="mb-0 fw-bold">{{$clientesTotais}}</h4>
                                 </div>
                             </div>
                         </div>
@@ -121,8 +121,8 @@
                                     <i class="bi bi-box-seam text-danger"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-0 text-muted small">Estoque Baixo</p>
-                                    <h4 class="mb-0 fw-bold">8</h4>
+                                    <p class="mb-0 text-muted small">Produtos</p>
+                                    <h4 class="mb-0 fw-bold">{{$produtosTotais}}</h4>
                                 </div>
                             </div>
                         </div>
@@ -131,7 +131,7 @@
             </div>
         </div>
     </div>
-    -->
+    
 </div>
 
 @endsection

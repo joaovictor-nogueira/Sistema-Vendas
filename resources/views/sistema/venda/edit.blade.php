@@ -149,7 +149,7 @@
                                         </div>
                                     @endforeach
                                 @else
-                                    @foreach ($venda->itens as $index => $produto)
+                                    @foreach ($venda->itens as $index => $item)
                                         <div class="produto row g-3 align-items-end mb-3">
                                             <div class="col-md-6">
                                                 <label class="form-label">Produto <span
@@ -158,11 +158,11 @@
                                                     class="form-select produto-select @error("produtos.$index.id") is-invalid @enderror"
                                                     onchange="atualizarValor(this)" required>
                                                     <option disabled value="">Selecione um produto...</option>
-                                                    @foreach ($produtos as $item)
-                                                        <option value="{{ $item->id }}"
-                                                            data-preco="{{ $item->preco_venda }}"
-                                                            {{ $produto->id == $item->id ? 'selected' : '' }}>
-                                                            {{ $item->nome }}
+                                                    @foreach ($produtos as $produto)
+                                                        <option value="{{ $produto->id }}"
+                                                            data-preco="{{ $produto->preco_venda }}"
+                                                            {{ $produto->id == $item->produto_id ? 'selected' : '' }}>
+                                                            {{ $produto->nome }}
                                                         </option>
                                                     @endforeach
                                                 </select>
@@ -172,7 +172,7 @@
                                                 <label class="form-label">Qtd</label>
                                                 <input type="number" name="produtos[{{ $index }}][quantidade]"
                                                     class="form-control @error("produtos[{{ $index }}][quantidade]") is-invalid @enderror"
-                                                    value="{{ $produto->quantidade }}" min="1" required>
+                                                    value="{{ $item->quantidade }}" min="1" required>
                                             </div>
 
                                             <div class="col-md-2">
@@ -182,7 +182,7 @@
                                                     <input type="text"
                                                         name="produtos[{{ $index }}][valor_unitario]"
                                                         class="form-control  @error("produtos[{{ $index }}][valor_unitario]") is-invalid @enderror"
-                                                        value="{{ $produto->preco_unitario }}" required>
+                                                        value="{{ $item->preco_unitario }}" required>
                                                 </div>
                                             </div>
 
@@ -192,8 +192,7 @@
                                                     <span class="input-group-text">R$</span>
                                                     <input type="text"
                                                         name="produtos[{{ $index }}][valor_total]"
-                                                        class="form-control" value="{{ $produto->valor_total }}"
-                                                        readonly>
+                                                        class="form-control" value="{{ $item->valor_total }}" readonly>
                                                 </div>
                                             </div>
 
@@ -374,7 +373,8 @@
                                                                 <input type="date"
                                                                     name="parcelas[{{ $index }}][data]"
                                                                     class="form-control @error("parcelas.$index.data") is-invalid @enderror"
-                                                                    required value="{{ $parcela->data ?? '' }}">
+                                                                    required
+                                                                    value="{{ $parcela->data->format('Y-m-d') ?? '' }}">
                                                                 @error("parcelas.$index.data")
                                                                     <p class="invalid-feedback d-block">{{ $message }}
                                                                     </p>
@@ -450,7 +450,11 @@
 
 
     <script>
+        window.isEdit = @json($isEdit ?? false);
+        window.originalParcelas = @json($venda->parcelas ?? []);
+
         //SELECT2
+        //------------------------
         $(document).ready(function() {
             $('#cliente_id').select2({
                 theme: 'bootstrap4',
@@ -471,6 +475,12 @@
             setTimeout(() => {
                 atualiTodosOsProdutos();
                 atualizarTotalGeral();
+
+                if (window.isEdit && window.originalParcelas.length > 0) {
+                    document.getElementById('tipo_pagamento').value = 'Parcelado';
+                    document.getElementById('qtd_parcelas').value = window.originalParcelas.length;
+                    toggleParcelas();
+                }
             }, 500);
         });
         //------------------------------
@@ -478,8 +488,8 @@
         let produtoIndex = {{ count(old('produtos', $venda->itens)) }};
 
         function addProduto() {
-            const container = document.querySelector('#produtos .mb-3'); // Seleciona o container principal
-            const button = container.querySelector('button[onclick="addProduto()"]'); // Seleciona o botão
+            const container = document.querySelector('#produtos .mb-3');
+            const button = container.querySelector('button[onclick="addProduto()"]');
 
             const html = `
         <div class="produto row g-3 align-items-end mb-3">
@@ -520,11 +530,9 @@
         </div>
     `;
 
-            // Insere o novo produto antes do botão
             button.insertAdjacentHTML('beforebegin', html);
             produtoIndex++;
 
-            // Inicializa o Select2 para o novo select
             $('.produto-select').select2({
                 theme: 'bootstrap4',
                 placeholder: 'Selecione ou digite para buscar...',
@@ -602,8 +610,16 @@
             document.getElementById('total-geral').innerText = 'R$ ' + totalFormatado.replace('.', ',');
             document.getElementById('valor_total_input').value = totalFormatado;
 
-            if (document.getElementById('tipo_pagamento').value === 'Parcelado') {
-                gerarParcelas();
+            const tipoPagamento = document.getElementById('tipo_pagamento').value;
+            const qtdParcelas = parseInt(document.getElementById('qtd_parcelas').value) || 1;
+
+            if (tipoPagamento === 'Parcelado') {
+                const qtdOriginal = @json($venda->parcelas->count() ?? 0);
+                const qtdAtual = parseInt(document.getElementById('qtd_parcelas').value) || 1;
+
+                if (qtdAtual !== qtdOriginal) {
+                    gerarParcelas(); 
+                }
             }
         }
         //-------------------------------------------------------
@@ -616,20 +632,34 @@
 
             container.style.display = tipo === 'Parcelado' ? 'block' : 'none';
 
-            if (tipo === 'A vista') {
+            if (tipo === 'avista') {
                 lista.innerHTML = `
-            <div class="card-body">
-                <h6 class="card-title text-muted mb-3"><i class="bi bi-calendar-check me-1"></i> Pagamento à Vista</h6>
-                <div class="alert alert-success py-2">
-                    <small class="d-flex align-items-center">
-                        <i class="bi bi-check-circle me-2"></i> O valor total será cobrado em uma única parcela
-                    </small>
-                </div>
-                <input type="hidden" name="parcelas[0][valor]" value="${document.getElementById('total-geral').innerText}">
+        <div class="card-body">
+            <h6 class="card-title text-muted mb-3"><i class="bi bi-calendar-check me-1"></i> Pagamento à Vista</h6>
+            <div class="alert alert-success py-2">
+                <small class="d-flex align-items-center">
+                    <i class="bi bi-check-circle me-2"></i> O valor total será cobrado em uma única parcela
+                </small>
             </div>
-        `;
+            <input type="hidden" name="parcelas[0][valor]" value="${document.getElementById('valor_total_input').value}">
+            <input type="hidden" name="parcelas[0][data]" value="${new Date().toISOString().split('T')[0]}">
+        </div>
+    `;
             } else if (tipo === 'Parcelado') {
-                gerarParcelas();
+
+                const originalTotal = parseFloat(@json($venda->valor_total ?? 0));
+                const currentTotal = parseFloat(document.getElementById('valor_total_input').value) || 0;
+                const originalQtdParcelas = @json($venda->parcelas->count() ?? 0);
+                const currentQtdParcelas = parseInt(document.getElementById('qtd_parcelas').value) || 1;
+
+                if (window.isEdit &&
+                    Math.abs(currentTotal - originalTotal) < 0.01 &&
+                    currentQtdParcelas === originalQtdParcelas &&
+                    window.originalParcelas.length > 0) {
+                    renderOriginalParcelas();
+                } else {
+                    gerarParcelas();
+                }
             }
         }
 
@@ -645,14 +675,14 @@
 
             if (total <= 0) {
                 lista.innerHTML = `
-                <div class="card-body">
-                    <div class="alert alert-warning py-2">
-                        <small class="d-flex align-items-center">
-                            <i class="bi bi-exclamation-triangle me-2"></i> Adicione produtos para calcular as parcelas
-                        </small>
-                    </div>
+            <div class="card-body">
+                <div class="alert alert-warning py-2">
+                    <small class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle me-2"></i> Adicione produtos para calcular as parcelas
+                    </small>
                 </div>
-            `;
+            </div>
+        `;
                 return;
             }
 
@@ -660,7 +690,6 @@
             let valores = Array(qtd).fill(valorParcela);
             let soma = valores.reduce((acc, val) => acc + val, 0);
 
-            // Ajustar a diferença na última parcela
             const diferenca = parseFloat((total - soma).toFixed(2));
             valores[qtd - 1] += diferenca;
 
@@ -675,34 +704,82 @@
                 const dataFormatada = data.toISOString().split('T')[0];
 
                 html += `
-                <div class="border p-3 mb-3 rounded bg-light">
-                    <div class="row align-items-center g-2">
-                        <div class="col-md-1">
-                            <label class="form-label mb-0"><strong>${i + 1}</strong></label>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small text-muted mb-0">Valor</label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                <input type="number" step="0.01" name="parcelas[${i}][valor]" 
-                                    class="form-control parcela-valor" 
-                                    ${i === qtd - 1 ? 'readonly' : ''} 
-                                    value="${valores[i].toFixed(2)}" 
-                                    data-index="${i}">
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label small text-muted mb-0">Data de Vencimento</label>
-                            <input type="date" name="parcelas[${i}][data]" class="form-control" required value="${dataFormatada}">
-                        </div>
-                        <div class="col-md-5">
-                            <label class="form-label small text-muted mb-0">Observação</label>
-                            <input type="text" name="parcelas[${i}][observacao]" placeholder="Opcional" class="form-control">
-                        </div>
+        <div class="border p-3 mb-3 rounded bg-light">
+            <div class="row align-items-center g-2">
+                <div class="col-md-1">
+                    <label class="form-label mb-0"><strong>${i + 1}</strong></label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-0">Valor</label>
+                    <div class="input-group">
+                        <span class="input-group-text">R$</span>
+                        <input type="number" step="0.01" name="parcelas[${i}][valor]" 
+                            class="form-control parcela-valor" 
+                            value="${valores[i].toFixed(2)}" 
+                            data-index="${i}">
                     </div>
                 </div>
-            `;
+                <div class="col-md-3">
+                    <label class="form-label small text-muted mb-0">Data de Vencimento</label>
+                    <input type="date" name="parcelas[${i}][data]" class="form-control" required value="${dataFormatada}">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small text-muted mb-0">Observação</label>
+                    <input type="text" name="parcelas[${i}][observacao]" placeholder="Opcional" class="form-control">
+                </div>
+            </div>
+        </div>
+        `;
             }
+            html += '</div>';
+            lista.innerHTML = html;
+
+            document.querySelectorAll('.parcela-valor').forEach(input => {
+                input.addEventListener('input', atualizarSomaParcelas);
+            });
+        }
+
+        function renderOriginalParcelas() {
+            const lista = document.getElementById('lista-parcelas');
+            const parcelas = window.originalParcelas;
+
+            let html =
+                '<div class="card-body"><h6 class="card-title text-muted mb-3"><i class="bi bi-calendar-check me-1"></i> Parcelas</h6>';
+
+            parcelas.forEach((parcela, i) => {
+                const dataFormatada = new Date(parcela.data).toISOString().split('T')[0];
+
+                html += `
+            <div class="border p-3 mb-3 rounded bg-light">
+                <div class="row align-items-center g-2">
+                    <div class="col-md-1">
+                        <label class="form-label mb-0"><strong>${i + 1}</strong></label>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted mb-0">Valor</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="number" step="0.01" name="parcelas[${i}][valor]" 
+                                class="form-control parcela-valor" 
+                                ${i === parcelas.length - 1 ? 'readonly' : ''} 
+                                value="${parseFloat(parcela.valor).toFixed(2)}" 
+                                data-index="${i}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted mb-0">Data de Vencimento</label>
+                        <input type="date" name="parcelas[${i}][data]" class="form-control" required value="${dataFormatada}">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small text-muted mb-0">Observação</label>
+                        <input type="text" name="parcelas[${i}][observacao]" placeholder="Opcional" 
+                            class="form-control" value="${parcela.observacao || ''}">
+                    </div>
+                </div>
+            </div>
+            `;
+            });
+
             html += '</div>';
             lista.innerHTML = html;
 
@@ -717,19 +794,17 @@
             });
         }
 
-        function atualizarUltimaParcela() {
+        function atualizarSomaParcelas() {
             const inputs = document.querySelectorAll('.parcela-valor');
             if (inputs.length === 0) return;
 
             const total = parseFloat(document.getElementById('valor_total_input').value) || 0;
-            const qtd = inputs.length;
-
             let soma = 0;
-            for (let i = 0; i < qtd - 1; i++) {
+
+            for (let i = 0; i < inputs.length - 1; i++) {
                 soma += parseFloat(inputs[i].value) || 0;
             }
-
-            const ultima = inputs[qtd - 1];
+            const ultima = inputs[inputs.length - 1];
             let valorFinal = total - soma;
 
             if (valorFinal < 0) valorFinal = 0;

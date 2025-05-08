@@ -112,6 +112,9 @@
                 @endif
             </div>
             <div class="modal-footer">
+                <a href="{{ route('vendas.pdf', $venda->id) }}" class="btn btn-primary text-white">
+                    <i class="bi bi-filetype-pdf"></i>
+                </a>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-lg me-1"></i> Fechar
                 </button>

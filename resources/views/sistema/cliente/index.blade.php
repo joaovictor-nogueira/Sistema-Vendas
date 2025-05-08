@@ -41,6 +41,7 @@
                         <th>#</th>
                         <th>Nome</th>
                         <th>Status</th>
+                        <th>Vendas</th>
                         <th>CPF</th>
                         <th>Email</th>
                         <th>Telefone</th>
@@ -59,6 +60,7 @@
                                     <span class="badge bg-danger">Inativo</span>
                                 @endif
                             </td>
+                            <td>{{ $cliente->vendas->count()}}</td>
                             <td>{{ $cliente->cpf }}</td>
                             <td>{{ $cliente->email }}</td>
                             <td>{{ $cliente->telefone }}</td>
@@ -81,4 +83,35 @@
     </div>
 
     @include('sistema.cliente.modais.createCliente')
+
+
+    <script>
+        new DataTable('#clienteTable', {
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/2.1.8/i18n/pt-BR.json',
+                paginate: {
+                    first: '&laquo;',
+                    last: '&raquo;',
+                    previous: '&lsaquo;',
+                    next: '&rsaquo;'
+                },
+
+            },
+
+            responsive: true,
+            order: [
+                [1, 'asc']
+            ],
+            pageLength: 10,
+            ordering: true,
+            fixedHeader: true,
+            columnDefs: [{
+                    orderable: false,
+                    targets: [7]
+                },
+
+            ]
+
+        });
+    </script>
 @endsection
