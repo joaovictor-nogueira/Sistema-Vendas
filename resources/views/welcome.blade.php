@@ -42,7 +42,7 @@
         </header>
 
         <main class="mb-5">
-            <p class="lead">Bem-vindo ao Sistema de Vendas. Gerencie suas vendas de forma simples e eficiente.</p>
+            <p class="lead">Bem-vindo ao Sistema de Vendas! Gerencie suas vendas de forma simples e eficiente.</p>
         </main>
 
         <footer class="text-muted small mt-auto pt-5">
