@@ -21,7 +21,7 @@ Este é um sistema web de vendas desenvolvido em Laravel. O objetivo do projeto 
 - MySQL  
 - Bootstrap
 - JavaScript
-
+- Node v18 ou superior
 ## Como rodar o projeto
 
 1. Clone o repositório:
