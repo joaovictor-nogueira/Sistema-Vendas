@@ -24,3 +24,24 @@ Este é um sistema web de vendas desenvolvido em Laravel. O objetivo do projeto 
    ```bash
    git clone https://github.com/joaovictor-nogueira/seu-repo.git
    ```
+2. Instale as dependências: 
+   ```bash
+    composer install
+    npm install && npm run dev
+   ```
+3. Configure o arquivo .env:
+   ```bash
+    cp .env.example .env
+    php artisan key:generate
+   ```
+4. Rode as migrations.
+   ```bash
+    php artisan migrate
+   ```
+5. Inicie o servidor
+   ```bash
+    php artisan serve
+   ```
+
+---
+Desenvolvido por João Victor N. Doratioto
