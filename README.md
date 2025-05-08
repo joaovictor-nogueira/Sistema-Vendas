@@ -26,7 +26,7 @@ Este é um sistema web de vendas desenvolvido em Laravel. O objetivo do projeto 
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/joaovictor-nogueira/seu-repo.git
+   git clone https://github.com/joaovictor-nogueira/Sistema-Vendas.git
    ```
 2. Instale as dependências: 
    ```bash
